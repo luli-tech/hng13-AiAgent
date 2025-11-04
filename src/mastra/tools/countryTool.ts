@@ -53,6 +53,7 @@ export const countryTool = createTool({
     const capital = found.capital?.[0] || "Unknown";
     const region = found.region || "Unknown";
     const subregion = found.subregion || "Unknown";
+    
 
     // Generate a random GDP estimate based on population
     const gdp = (found.population * Math.random() * 1000).toFixed(2);
