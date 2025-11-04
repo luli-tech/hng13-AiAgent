@@ -10,6 +10,7 @@ export const a2aAgentRoute = registerApiRoute("/a2a/agent/:agentId", {
       const body = await c.req.json();
       const { jsonrpc, id: requestId, method, params } = body;
 
+      // Validate base JSON-RPC structure
       if (jsonrpc !== "2.0" || !requestId) {
         return c.json(
           {
@@ -40,32 +41,35 @@ export const a2aAgentRoute = registerApiRoute("/a2a/agent/:agentId", {
         );
       }
 
-      const { messages } = params || {};
-      if (!Array.isArray(messages) || messages.length === 0) {
+      const { message } = params || {};
+      if (!message || !message.role || !message.parts) {
         return c.json(
           {
             jsonrpc: "2.0",
             id: requestId,
             error: {
               code: -32602,
-              message: "Missing or invalid 'messages' parameter.",
+              message:
+                "Missing or invalid 'message' parameter. Must include 'role' and 'parts'.",
             },
           },
           400
         );
       }
 
-      const formattedMessages = messages.map((msg) => ({
-        role: msg.role,
+      // Format single message
+      const formattedMessage = {
+        role: message.role,
         content:
-          msg.parts
+          message.parts
             ?.map((part: any) =>
               part.kind === "text" ? part.text : JSON.stringify(part.data)
             )
             .join("\n") || "",
-      }));
+      };
 
-      const response = await agent.generate(formattedMessages);
+      // Generate agent response
+      const response = await agent.generate([formattedMessage]);
       const agentText = response.text || "";
 
       const artifacts = [

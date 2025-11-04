@@ -8,17 +8,23 @@ import {
   completenessScorer,
   translationScorer,
 } from "./scorers/weather-scorer";
-import { countryAgent } from "./agents/countryAgents";
 import { a2aAgentRoute } from "./routes/agentRoutes";
+import { countryAgent } from "./agents/countryAgents";
 
 export const mastra = new Mastra({
   workflows: { weatherWorkflow },
   agents: { weatherAgent, countryAgent },
-  server: { apiRoutes: [a2aAgentRoute] },
   scorers: {
     toolCallAppropriatenessScorer,
     completenessScorer,
     translationScorer,
+  },
+  server: {
+    build: {
+      openAPIDocs: true,
+      swaggerUI: true,
+    },
+    apiRoutes: [a2aAgentRoute],
   },
   storage: new LibSQLStore({
     // stores observability, scores, ... into memory storage, if it needs to persist, change to file:../mastra.db
